@@ -1,0 +1,82 @@
+version: '3.9'
+
+services:
+  # ─── PostgreSQL Database ──────────────────────────────────
+  db:
+    image: postgres:16-alpine
+    container_name: betless-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: betless
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-betless_secure_password}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./apps/api/src/db/schema.sql:/docker-entrypoint-initdb.d/01-schema.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d betless"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ─── API Server ──────────────────────────────────────────
+  api:
+    build:
+      context: ./apps/api
+      dockerfile: Dockerfile
+    container_name: betless-api
+    restart: unless-stopped
+    env_file: ./apps/api/.env
+    environment:
+      DATABASE_URL: postgresql://postgres:${DB_PASSWORD:-betless_secure_password}@db:5432/betless
+      NODE_ENV: production
+    ports:
+      - "4000:4000"
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      - api_uploads:/app/uploads
+      - api_logs:/app/logs
+
+  # ─── Web Frontend ────────────────────────────────────────
+  web:
+    build:
+      context: ./apps/web
+      dockerfile: Dockerfile
+    container_name: betless-web
+    restart: unless-stopped
+    env_file: ./apps/web/.env
+    environment:
+      NEXT_PUBLIC_API_URL: http://api:4000
+      NODE_ENV: production
+    ports:
+      - "3000:3000"
+    depends_on:
+      - api
+
+  # ─── Nginx Reverse Proxy ─────────────────────────────────
+  nginx:
+    image: nginx:alpine
+    container_name: betless-nginx
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/ssl:/etc/nginx/ssl:ro
+    depends_on:
+      - web
+      - api
+
+volumes:
+  postgres_data:
+  api_uploads:
+  api_logs:
+
+networks:
+  default:
+    name: betless-network
