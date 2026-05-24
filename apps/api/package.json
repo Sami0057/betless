@@ -10,7 +10,6 @@
     "seed": "node -r ts-node/register src/db/seed.ts"
   },
   "dependencies": {
-    "@betless/shared": "*",
     "bcryptjs": "^2.4.3",
     "compression": "^1.7.4",
     "cors": "^2.8.5",

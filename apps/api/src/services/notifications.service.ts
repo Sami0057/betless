@@ -1,6 +1,6 @@
 import { v4 as uuidv4 } from 'uuid';
 import { query } from '../db/client';
-import { NotificationType } from '@betless/shared';
+import { NotificationType } from '../shared';
 
 interface NotificationPayload {
   type: NotificationType;

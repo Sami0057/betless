@@ -2,7 +2,7 @@ import { Response } from 'express';
 import { query, queryOne, withTransaction } from '../db/client';
 import { AppError } from '../middleware/errorHandler';
 import { AuthRequest } from '../middleware/auth';
-import { POINTS_PER_CORRECT_PREDICTION, getRankFromWins } from '@betless/shared';
+import { POINTS_PER_CORRECT_PREDICTION, getRankFromWins } from '../shared';
 import { checkAndAwardBadges } from '../services/badges.service';
 import { createNotification } from '../services/notifications.service';
 

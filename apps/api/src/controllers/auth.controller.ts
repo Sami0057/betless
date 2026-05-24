@@ -5,7 +5,7 @@ import { query, queryOne } from '../db/client';
 import { signAccessToken, signRefreshToken, verifyRefreshToken } from '../utils/jwt';
 import { AppError } from '../middleware/errorHandler';
 import { AuthRequest } from '../middleware/auth';
-import { getRankFromWins } from '@betless/shared';
+import { getRankFromWins } from '../shared';
 
 export async function register(req: Request, res: Response): Promise<void> {
   const { username, email, password, language = 'en' } = req.body;
